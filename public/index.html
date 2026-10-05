@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f9edf0"><meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Một chút tò mò. Năm câu hỏi nhỏ. Và những điều tớ muốn gửi cậu.">
+  <title>Gửi cậu, một chút thương</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="petals" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <header><a class="wordmark" href="/">gửi cậu<span aria-hidden="true">♡</span></a><button class="motion-toggle" id="motion-toggle" aria-pressed="false">Dừng chuyển động</button></header>
+  <main id="main">
+    <section id="welcome" class="welcome view">
+      <div class="eyebrow"><span></span> MỘT ĐIỀU NHO NHỎ, CHỈ DÀNH CHO CẬU</div>
+      <h1>Có đôi điều,<br>tớ muốn <em>gửi cậu.</em></h1>
+      <p class="intro">Không phải một dịp gì đặc biệt.<br>Chỉ là có những điều, tớ muốn cậu biết.</p>
+      <div class="envelope-scene" aria-hidden="true">
+        <span class="spark spark-one">✧</span><span class="spark spark-two">✧</span>
+        <span class="tiny-heart heart-one">♡</span><span class="tiny-heart heart-two">♡</span>
+        <div class="envelope"><div class="letter-peek">for you, always <span>♡</span></div><div class="envelope-back"></div><div class="envelope-front"></div><div class="envelope-flap"></div><div class="seal">♡</div></div>
+        <span class="handnote">một chiếc thư, một chút thương</span>
+      </div>
+      <p class="invitation">Trước khi mở thư, cùng tớ trả lời 5 câu hỏi nhỏ nhé.<br>Không có đúng hay sai. Chỉ có câu trả lời của cậu.</p>
+      <button class="primary" id="start" disabled>Đang chuẩn bị thư…</button>
+      <div class="small-note">5 câu hỏi <span>·</span> Một bức thư <span>·</span> Rất nhiều chân thành</div>
+    </section>
+    <section id="quiz" class="quiz view" hidden aria-labelledby="question-title">
+      <div class="eyebrow">MỖI CÂU TRẢ LỜI, GẦN THƯ HƠN MỘT CHÚT</div>
+      <div class="progress" id="progress" aria-label="Tiến độ trả lời"></div>
+      <div class="question-card" id="question-card">
+        <div class="question-meta"><span id="question-tag"></span><span id="question-number"></span></div>
+        <h2 id="question-title" tabindex="-1"></h2>
+        <p id="question-hint"></p>
+        <form id="answer-form">
+          <label for="answer">Câu trả lời của cậu</label>
+          <textarea id="answer" maxlength="2000" rows="4" placeholder="Cậu cứ viết điều mình nghĩ nhé…" required aria-describedby="question-hint answer-error"></textarea>
+          <div class="input-footer"><span>Chỉ cần là điều cậu muốn nói.</span><span id="counter">0 / 2000</span></div>
+          <p id="answer-error" class="error" role="alert"></p>
+          <button class="primary" id="next" type="submit">Câu tiếp theo <span aria-hidden="true">→</span></button>
+        </form>
+      </div>
+      <p class="under-card">Tớ ở đây, lắng nghe cậu. <span aria-hidden="true">♡</span></p>
+    </section>
+    <section id="ready" class="ready view" hidden aria-labelledby="ready-title">
+      <div class="eyebrow">5 / 5 · MỌI ĐIỀU ĐÃ SẴN SÀNG</div>
+      <h2 id="ready-title" tabindex="-1">Cảm ơn cậu<br>vì đã <em>chia sẻ.</em></h2>
+      <p>Giờ đến lượt tớ kể cậu nghe một chút.</p>
+      <div class="envelope-scene ready-scene" aria-hidden="true"><div class="envelope" id="opening-envelope"><div class="letter-peek">gửi cậu <span>♡</span></div><div class="envelope-back"></div><div class="envelope-front"></div><div class="envelope-flap"></div><div class="seal">♡</div></div></div>
+      <button class="primary" id="open-letter">Mở thư của tớ <span aria-hidden="true">♡</span></button>
+      <p id="open-error" class="error" role="alert"></p>
+    </section>
+    <section id="letter-view" class="letter-view view" hidden aria-labelledby="letter-title">
+      <div class="eyebrow">NHỮNG ĐIỀU TỚ MUỐN CẬU BIẾT</div>
+      <article class="letter-paper"><div class="paper-top"><span>MỘT BỨC THƯ DÀNH RIÊNG CHO CẬU</span><span aria-hidden="true">♡</span></div><h2 id="letter-title" tabindex="-1">Gửi cậu,</h2><div id="letter-body"></div><div class="signature">Từ tớ, với thật nhiều chân thành <span aria-hidden="true">♡</span></div><p id="letter-note"></p></article>
+      <p class="end-note">Có những bông hoa, càng ngắm càng thấy thương.</p>
+      <button class="text-button" id="back-top">Đọc lại từ đầu ↑</button>
+    </section>
+    <p id="connection-error" class="error" role="alert"></p><button id="retry" class="text-button" hidden>Thử kết nối lại</button>
+    <noscript><p class="error">Cậu bật JavaScript để mở chiếc thư này nhé.</p></noscript>
+  </main>
+  <footer>Được viết bằng sự chân thành <span aria-hidden="true">♡</span></footer>
+</body>
+</html>
