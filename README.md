@@ -40,7 +40,9 @@ Tài liệu chính thức: https://docs.railway.com/guides/deploy-node-express-a
 
 Mỗi câu yêu cầu ít nhất một ký tự không phải khoảng trắng, tối đa 2.000 ký tự, không chấm đúng/sai. Máy chủ chỉ cho tải nội dung thư sau đủ 5 lượt trả lời theo thứ tự. Thư không có sẵn trong HTML hay JavaScript công khai.
 
-Khi cấu hình email, máy chủ giữ câu trả lời trong RAM đến khi hoàn thành câu 5, rồi gửi cả 5 câu trong một email và xóa nội dung khỏi phiên. Nếu dịch vụ mail báo lỗi, câu cuối giữ nguyên để gửi lại; các câu trước vẫn được giữ. Một khóa chống gửi trùng được dùng cho mỗi phiên. Nếu chưa cấu hình email, trang vẫn mở thư bình thường và không lưu nội dung trả lời trên máy chủ.
+Máy chủ giữ câu trả lời trong RAM để người trả lời có thể dùng nút **Quay lại** từ câu 2 đến câu 5 và sửa câu trước. Câu hiện tại được giữ dưới dạng bản nháp khi quay lại; nhấn **Câu tiếp theo** để lưu sửa đổi và đi tiếp. Câu trả lời mới thay thế câu cũ, không thêm bản trùng. Không sửa được sau khi đã hoàn thành câu 5.
+
+Khi cấu hình email, hoàn thành câu 5 sẽ gửi bản mới nhất của cả 5 câu trong một email và xóa nội dung khỏi phiên. Nếu dịch vụ mail báo lỗi, câu cuối giữ nguyên để gửi lại; các câu trước vẫn được giữ. Một khóa chống gửi trùng được dùng cho mỗi bản câu trả lời. Nếu chưa cấu hình email, trang vẫn mở thư bình thường và xóa câu trả lời khỏi máy chủ khi hoàn thành.
 
 Bản nháp câu hiện tại được giữ trong sessionStorage của tab, rồi xóa khi gửi thành công. Phiên tồn tại 24 giờ; khi máy chủ khởi động lại hoặc deploy lại, tiến độ và câu trả lời chưa gửi sẽ mất và cô ấy cần trả lời lại. Dùng một replica trên Railway cho phiên bản này. Thư được mở sau khi dịch vụ mail chấp nhận email; điều này không đảm bảo email đã vào Inbox (có thể nằm trong Spam hoặc bị dịch vụ từ chối ở bước phát).
 

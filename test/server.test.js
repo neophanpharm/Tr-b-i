@@ -66,10 +66,41 @@ test('email is sent only after five answers and failures can retry without losin
     const state = await fetch(base + '/api/state', { headers }).then(r => r.json());
     assert.equal(state.step, 5);
     assert.equal(state.answers, undefined);
+    assert.equal(state.draftAnswers, undefined);
     assert.equal((await answer(4)).status, 409);
     assert.equal(attempts.length, 2);
     assert.equal((await fetch(base + '/api/letter', { headers })).status, 200);
     assert.equal((await fetch(base + '/email.js')).status, 404);
     assert.equal((await fetch(base + '/.env.example')).status, 404);
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});
+
+test('editing earlier answers preserves progress and emails only the latest version', async () => {
+  const emails = [];
+  const server = createServer({ mailEnabled: true, mailer: async payload => { emails.push(payload); return 'accepted'; } });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const response = await fetch(base + '/api/state');
+    const cookie = response.headers.get('set-cookie').split(';')[0];
+    const headers = { Cookie: cookie, 'Content-Type': 'application/json' };
+    const answer = (step, text) => fetch(base + '/api/answer', { method: 'POST', headers, body: JSON.stringify({ step, answer: text }) });
+    for (let i = 0; i < 4; i++) assert.equal((await answer(i, `Bản cũ ${i + 1}`)).status, 200);
+    const edit = await answer(0, 'Bản mới của câu 1');
+    assert.equal(edit.status, 200);
+    assert.equal((await edit.json()).step, 4);
+    assert.equal((await answer(-1, 'invalid')).status, 409);
+    assert.equal((await answer(1, '  ')).status, 400);
+    const state = await fetch(base + '/api/state', { headers }).then(r => r.json());
+    assert.deepEqual(state.draftAnswers, ['Bản mới của câu 1', 'Bản cũ 2', 'Bản cũ 3', 'Bản cũ 4']);
+    const otherSession = await fetch(base + '/api/state').then(r => r.json());
+    assert.deepEqual(otherSession.draftAnswers, []);
+    assert.equal((await fetch(base + '/api/letter', { headers })).status, 403);
+    assert.equal(emails.length, 0);
+    assert.equal((await answer(4, 'Câu cuối')).status, 200);
+    assert.equal(emails.length, 1);
+    assert.deepEqual(emails[0].entries.map(e => e.answer), ['Bản mới của câu 1', 'Bản cũ 2', 'Bản cũ 3', 'Bản cũ 4', 'Câu cuối']);
+    assert.equal((await answer(0, 'Sửa sau khi gửi')).status, 409);
+    assert.equal(emails.length, 1);
   } finally { await new Promise(resolve => server.close(resolve)); }
 });

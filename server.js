@@ -47,25 +47,29 @@ return http.createServer(async (req, res) => {
       }
       const s = session(req, res);
       if (!s) return json(res, 503, { error: 'Trang đang bận một chút. Cậu thử lại sau nhé.' });
-      if (path === '/api/state' && req.method === 'GET') return json(res, 200, { step: s.step, questions, collectsAnswers: mailEnabled });
+      if (path === '/api/state' && req.method === 'GET') return json(res, 200, { step: s.step, questions, collectsAnswers: mailEnabled, ...(s.step < questions.length ? { draftAnswers: s.answers } : {}) });
       if (path === '/api/answer' && req.method === 'POST') {
         const { step, answer } = await body(req);
-        if (!Number.isInteger(step) || step !== s.step || step >= questions.length) return json(res, 409, { error: 'Mình tải lại câu hỏi hiện tại nhé.', step: s.step });
+        if (!Number.isInteger(step) || step < 0 || step > s.step || step >= questions.length || s.step === questions.length) return json(res, 409, { error: 'Mình tải lại câu hỏi hiện tại nhé.', step: s.step });
         if (typeof answer !== 'string' || !answer.trim() || answer.length > 2000) return json(res, 400, { error: 'Cậu viết một chút nhé (tối đa 2.000 ký tự).' });
         if (s.sending) return json(res, 429, { error: 'Câu trả lời đang được gửi, cậu đợi một chút nhé.' });
-        if (mailEnabled) {
-          if (step === questions.length - 1) {
+        // Giữ bản nháp theo chỉ số để có thể sửa câu trước, không thêm bản trùng.
+        // Bản nội dung mới cần khóa gửi khác; gửi lại cùng nội dung giữ nguyên khóa.
+        if (s.answers[step] !== undefined && s.answers[step] !== answer.trim()) s.emailId = randomBytes(16).toString('hex');
+        s.answers[step] = answer.trim();
+        if (step === questions.length - 1) {
+          if (mailEnabled) {
             s.sending = true;
             try {
-              await mailer({ id: s.emailId, entries: [...s.answers, answer.trim()].map((text, index) => ({ question: questions[index].title, answer: text })) });
-              s.answers = [];
+              await mailer({ id: s.emailId, entries: s.answers.map((text, index) => ({ question: questions[index].title, answer: text })) });
             } catch {
               console.error('Email delivery failed; last answer can be retried.');
               return json(res, 503, { error: 'Chưa gửi được câu trả lời. Cậu nhấn gửi lại nhé, những câu trước vẫn được giữ.' });
             } finally { s.sending = false; }
-          } else s.answers.push(answer.trim());
+          }
+          s.answers = [];
         }
-        s.step++;
+        s.step = Math.max(s.step, step + 1);
         return json(res, 200, { step: s.step });
       }
       if (path === '/api/letter' && req.method === 'GET') {

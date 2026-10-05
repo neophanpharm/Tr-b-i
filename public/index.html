@@ -41,7 +41,11 @@
           <textarea id="answer" maxlength="2000" rows="4" placeholder="Cậu cứ viết điều mình nghĩ nhé…" required aria-describedby="question-hint answer-error"></textarea>
           <div class="input-footer"><span>Chỉ cần là điều cậu muốn nói.</span><span id="counter">0 / 2000</span></div>
           <p id="answer-error" class="error" role="alert"></p>
-          <button class="primary" id="next" type="submit">Câu tiếp theo <span aria-hidden="true">→</span></button>
+          <div class="question-actions">
+            <button class="secondary" id="previous" type="button" hidden><span aria-hidden="true">←</span> Quay lại</button>
+            <button class="primary" id="next" type="submit">Câu tiếp theo <span aria-hidden="true">→</span></button>
+          </div>
+          <p id="edit-note" class="edit-note" hidden>Cậu có thể quay lại sửa trước khi hoàn thành câu cuối nhé.</p>
         </form>
       </div>
       <p class="under-card">Tớ ở đây, lắng nghe cậu. <span aria-hidden="true">♡</span></p>

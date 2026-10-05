@@ -1,5 +1,7 @@
 const $ = (id) => document.getElementById(id);
 let step = 0;
+let completedStep = 0;
+let answers = [];
 let questions = [];
 let busy = false;
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -33,19 +35,21 @@ function renderQuestion() {
   const question = questions[step];
   $('progress').replaceChildren(...questions.map((_, index) => {
     const node = document.createElement('span');
-    node.className = index < step ? 'done' : index === step ? 'current' : '';
+    node.className = index === step ? 'current' : index < completedStep ? 'done' : '';
     return node;
   }));
-  $('progress').setAttribute('aria-label', `Đã trả lời ${step} trên ${questions.length} câu hỏi`);
+  $('progress').setAttribute('aria-label', `Đã trả lời ${completedStep} trên ${questions.length} câu hỏi, đang xem câu ${step + 1}`);
   $('question-tag').textContent = question.tag;
   $('question-number').textContent = `0${step + 1} / 0${questions.length}`;
   $('question-title').textContent = question.title;
   $('question-hint').textContent = question.hint;
-  $('answer').value = storage.get(`draft-${step}`) || '';
+  $('answer').value = storage.get(`draft-${step}`) ?? answers[step] ?? '';
   $('counter').textContent = `${$('answer').value.length} / 2000`;
   $('answer-error').textContent = '';
   $('answer').removeAttribute('aria-invalid');
   $('next').innerHTML = step === questions.length - 1 ? 'Đến chiếc thư của tớ <span aria-hidden="true">♡</span>' : 'Câu tiếp theo <span aria-hidden="true">→</span>';
+  $('previous').hidden = step === 0;
+  $('edit-note').hidden = false;
   show('quiz', 'question-title');
   $('question-card').getAnimations().forEach((a) => a.cancel());
   if (!paused && !reduced.matches) $('question-card').animate([{ opacity: .3, transform: 'translateY(8px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 350, easing: 'ease-out' });
@@ -56,6 +60,8 @@ async function init() {
   try {
     const state = await api('/api/state');
     step = state.step;
+    completedStep = state.step;
+    answers = state.draftAnswers || [];
     questions = state.questions;
     $('delivery-note').hidden = !state.collectsAnswers;
     $('start').disabled = false;
@@ -68,6 +74,12 @@ async function init() {
 }
 $('retry').addEventListener('click', init);
 $('start').addEventListener('click', renderQuestion);
+$('previous').addEventListener('click', () => {
+  if (busy || step === 0) return;
+  storage.set(`draft-${step}`, $('answer').value);
+  step--;
+  renderQuestion();
+});
 $('answer').addEventListener('input', () => {
   storage.set(`draft-${step}`, $('answer').value);
   $('counter').textContent = `${$('answer').value.length} / 2000`;
@@ -85,17 +97,26 @@ $('answer-form').addEventListener('submit', async (event) => {
   }
   busy = true;
   $('next').disabled = true;
+  $('previous').disabled = true;
+  $('answer').disabled = true;
   try {
     const result = await api('/api/answer', { step, answer });
+    answers[step] = answer;
     storage.remove(`draft-${step}`);
-    step = result.step;
+    completedStep = result.step;
+    step++;
+    if (completedStep === questions.length) {
+      answers = [];
+      questions.forEach((_, index) => storage.remove(`draft-${index}`));
+      step = completedStep;
+    }
     renderQuestion();
   } catch (error) {
     if (error.status === 409) {
-      try { const state = await api('/api/state'); step = state.step; questions = state.questions; renderQuestion(); }
+      try { const state = await api('/api/state'); step = state.step; completedStep = state.step; answers = state.draftAnswers || []; questions = state.questions; renderQuestion(); }
       catch { $('answer-error').textContent = 'Chưa kết nối được. Câu trả lời của cậu vẫn ở đây, thử lại nhé.'; }
     } else $('answer-error').textContent = error.status ? error.message : 'Chưa gửi được. Câu trả lời của cậu vẫn ở đây, thử lại nhé.';
-  } finally { busy = false; $('next').disabled = false; }
+  } finally { busy = false; $('next').disabled = false; $('previous').disabled = false; $('answer').disabled = false; }
 });
 $('open-letter').addEventListener('click', async () => {
   if (busy) return;
