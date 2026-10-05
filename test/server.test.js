@@ -1,8 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { server } from '../server.js';
+import { createServer } from '../server.js';
 
 test('letter stays locked until five non-empty, sequential answers', async () => {
+  const server = createServer({ mailEnabled: false });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
   try {
@@ -39,5 +40,36 @@ test('letter stays locked until five non-empty, sequential answers', async () =>
       assert.equal(response.status, 200);
       assert.ok(!(await response.text()).includes('hoa khôi mầm non'));
     }
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});
+
+test('email is sent only after five answers and failures can retry without losing answers', async () => {
+  const attempts = [];
+  const server = createServer({ mailEnabled: true, mailer: async (payload) => { attempts.push(payload); if (attempts.length === 1) throw new Error('Simulated service outage'); return 'accepted'; } });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    const stateResponse = await fetch(base + '/api/state');
+    const cookie = stateResponse.headers.get('set-cookie').split(';')[0];
+    assert.equal((await stateResponse.json()).collectsAnswers, true);
+    const headers = { Cookie: cookie, 'Content-Type': 'application/json' };
+    const answer = (step) => fetch(base + '/api/answer', { method: 'POST', headers, body: JSON.stringify({ step, answer: `Trả lời ${step + 1}` }) });
+    for (let i = 0; i < 4; i++) assert.equal((await answer(i)).status, 200);
+    assert.equal(attempts.length, 0);
+    assert.equal((await answer(4)).status, 503);
+    assert.equal((await fetch(base + '/api/letter', { headers })).status, 403);
+    assert.equal((await answer(4)).status, 200);
+    assert.equal(attempts.length, 2);
+    assert.equal(attempts[0].id, attempts[1].id);
+    assert.equal(attempts[1].entries.length, 5);
+    assert.deepEqual(attempts[1].entries.map(e => e.answer), ['Trả lời 1', 'Trả lời 2', 'Trả lời 3', 'Trả lời 4', 'Trả lời 5']);
+    const state = await fetch(base + '/api/state', { headers }).then(r => r.json());
+    assert.equal(state.step, 5);
+    assert.equal(state.answers, undefined);
+    assert.equal((await answer(4)).status, 409);
+    assert.equal(attempts.length, 2);
+    assert.equal((await fetch(base + '/api/letter', { headers })).status, 200);
+    assert.equal((await fetch(base + '/email.js')).status, 404);
+    assert.equal((await fetch(base + '/.env.example')).status, 404);
   } finally { await new Promise(resolve => server.close(resolve)); }
 });

@@ -57,6 +57,7 @@ async function init() {
     const state = await api('/api/state');
     step = state.step;
     questions = state.questions;
+    $('delivery-note').hidden = !state.collectsAnswers;
     $('start').disabled = false;
     $('start').innerHTML = 'Cùng tớ bắt đầu nhé <span aria-hidden="true">→</span>';
     if (step > 0) renderQuestion();
@@ -104,7 +105,16 @@ $('open-letter').addEventListener('click', async () => {
   try {
     const letter = await api('/api/letter');
     $('letter-title').textContent = letter.greeting;
-    $('letter-body').replaceChildren(...letter.paragraphs.map((text) => { const p = document.createElement('p'); p.textContent = text; return p; }));
+    $('letter-body').replaceChildren(...letter.paragraphs.map((text) => {
+      const p = document.createElement('p');
+      const emphasis = 'rất rất rất';
+      const pieces = text.split(emphasis);
+      pieces.forEach((piece, index) => {
+        if (index > 0) { const strong = document.createElement('strong'); strong.textContent = emphasis; p.append(strong); }
+        p.append(document.createTextNode(piece));
+      });
+      return p;
+    }));
     $('letter-note').textContent = letter.note;
     $('opening-envelope').classList.add('opening');
     if (!paused && !reduced.matches) await new Promise((resolve) => setTimeout(resolve, 1000));
