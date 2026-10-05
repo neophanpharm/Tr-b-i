@@ -1,10 +1,10 @@
 // Sửa câu hỏi và thư tại đây. File này không được phục vụ ra trình duyệt.
 export const questions = [
-  { title: 'Ấn tượng đầu tiên của cậu về tớ là gì?', hint: 'Một chút tò mò, một chút bất ngờ… hay điều gì khác?', tag: 'Ngày mình gặp nhau' },
-  { title: 'Có khoảnh khắc nào của hai đứa khiến cậu mỉm cười không?', hint: 'Một cuộc trò chuyện, một lần đi chơi, hay một điều bé xíu thôi.', tag: 'Một kỷ niệm nho nhỏ' },
-  { title: 'Nếu ví mình với một bông hoa, cậu sẽ chọn hoa gì?', hint: 'Không cần biết tên hoa cũng được. Cứ kể điều cậu nghĩ nhé.', tag: 'Bông hoa của cậu' },
-  { title: 'Cậu muốn hai đứa cùng làm điều gì trong lần gặp tới?', hint: 'Đi dạo, ăn món ngon, hay chỉ ngồi nói chuyện cùng nhau?', tag: 'Một chiếc hẹn' },
-  { title: 'Hôm nay, có điều gì cậu muốn kể với tớ không?', hint: 'Một niềm vui, một chuyện nhỏ, hoặc đơn giản là “hôm nay tớ ổn”.', tag: 'Tớ muốn nghe cậu' }
+  { title: 'Lý do gì khiến cậu tìm tớ vậy?', hint: 'Tớ tò mò về điều đã khiến cậu muốn tìm tớ.', tag: 'Điều đưa cậu đến' },
+  { title: 'Con người tớ có giống như trong tưởng tượng của cậu không?', hint: 'Có điều gì giống, hay khác với những gì cậu từng nghĩ?', tag: 'Tớ trong mắt cậu' },
+  { title: 'Hiện tại tớ có redflag/ điều gì khiến cậu suy nghĩ không?', hint: 'Cậu cứ nói thật điều mình nghĩ nhé.', tag: 'Một chút thật lòng' },
+  { title: 'Cậu cảm thấy gì khi đi bộ với tớ?', hint: 'Tớ muốn nghe cảm nhận của cậu về những lần mình đi bộ cùng nhau.', tag: 'Những bước chân cùng nhau' },
+  { title: 'Kể 1 bí mật mà cậu không nói cho tớ, đổi lại tớ sẽ kể 1 bí mật trong lần đi bộ tới', hint: 'Một bí mật nho nhỏ mà cậu thấy thoải mái chia sẻ nhé.', tag: 'Một bí mật, một lời hẹn' }
 ];
 
 export const letter = {
